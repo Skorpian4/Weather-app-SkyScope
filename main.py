@@ -64,7 +64,7 @@ def procurarcidade():
         cidade = infocidade.get()  # Recebe nome da cidade
         if cidade:  # Verifica se a cidade foi inserida
             Api_key = '344ca4445c87003f84ffbe7f96e79a30'
-            url = f'https://api.openweathermap.org/data/2.5/weather?q={cidade}&appid={Api_key}'
+            url = f'https://api.openweathermap.org/data/2.5/weather?q={cidade}&appid={Api_key}&lang=pt'
             res = requests.get(url)
 
 
@@ -107,7 +107,7 @@ def Previsão5dias():
         
         if cidade and paiscodigo:  # Verifica se ambos os campos foram preenchidos
             Api_key = '344ca4445c87003f84ffbe7f96e79a30'
-            url = f'https://api.openweathermap.org/data/2.5/forecast?q={cidade},{paiscodigo}&appid={Api_key}'
+            url = f'https://api.openweathermap.org/data/2.5/forecast?q={cidade},{paiscodigo}&appid={Api_key}&lang=pt'
             res = requests.get(url)
 
             if res.status_code == 200:  # Verifica se a requisição foi bem-sucedida
@@ -123,7 +123,23 @@ def Previsão5dias():
                     forecast_info.append(f'{date_time}\nTemperatura: {temp:.2f}°C\nDescrição: {description}\n')
 
                 # Atualiza o label com as previsões
-                result_label.configure(text='\n'.join(forecast_info), text_color='white', font=custom_font2)
+                limpar_janela()
+                # Criar o CTkTextbox com barra de rolagem
+                result_textbox = ctk.CTkTextbox(janela, wrap="word", font=custom_font2, width=200, height=200)
+                result_textbox.pack(expand=True, fill="both", padx=10, pady=20)
+
+                # Inserir o texto da previsão no CTkTextbox
+                result_textbox.insert("0.0", '\n\n'.join(forecast_info))
+
+                # Desabilitar a edição para tornar o CTkTextbox somente leitura
+                result_textbox.configure(state="disabled")
+
+                # Botão para buscar o tempo
+                search_btn = ctk.CTkButton(janela, text='Procurar por outra Cidade', font=custom_font2,command=Procurarprevisao, text_color='white', corner_radius=20, width=200, height=40)
+                search_btn.pack(pady=10)  
+
+                back_btn = ctk.CTkButton(janela, text='Voltar', font=custom_font2, command= clique,text_color='white', corner_radius=20, width=200, height=40)
+                back_btn.pack(pady=10)
             else:
                 result_label.configure(text='Cidade não encontrada!',text_color='white', font=custom_font2)
 
