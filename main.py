@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from PIL import Image
 import requests
+import geocoder
 
 ctk.set_appearance_mode("dark")  
 ctk.set_default_color_theme("dark-blue")  
@@ -46,7 +47,7 @@ def clique():
     janela_btn1.place(x=380, y=140)
 
     #botão para procurar temperatura por localização atual
-    janela_btn2 = ctk.CTkButton(janela, text='Localização atual', corner_radius=20, width=200, height=40, hover_color='#1F77B4', text_color='white', bg_color='#232323')
+    janela_btn2 = ctk.CTkButton(janela, text='Localização atual', corner_radius=20,command=localizacaoatual, width=200, height=40, hover_color='#1F77B4', text_color='white', bg_color='#232323')
     janela_btn2.place(x=380, y=200)
 
 def procurarcidade():
@@ -60,7 +61,7 @@ def procurarcidade():
     result_label = ctk.CTkLabel(janela, text='')
     result_label.pack(pady=20)
 
-    def Procurartempo():
+    def gettempo():
         cidade = infocidade.get()  # Recebe nome da cidade
         if cidade:  # Verifica se a cidade foi inserida
             Api_key = '344ca4445c87003f84ffbe7f96e79a30'
@@ -83,7 +84,7 @@ def procurarcidade():
                 result_label.configure(janela, text='Cidade não encontrada!', font=custom_font2, text_color='white')
 
     # Botão para buscar o tempo
-    search_btn = ctk.CTkButton(janela, text='Procurar Tempo', font=custom_font2, command= Procurartempo,text_color='white', corner_radius=20, width=200, height=40)
+    search_btn = ctk.CTkButton(janela, text='Procurar Tempo', font=custom_font2, command= gettempo,text_color='white', corner_radius=20, width=200, height=40)
     search_btn.pack(pady=10)
 
     back_btn = ctk.CTkButton(janela, text='Voltar', font=custom_font2, command= clique,text_color='white', corner_radius=20, width=200, height=40)
@@ -101,7 +102,7 @@ def Previsão5dias():
     result_label = ctk.CTkLabel(janela, text='')
     result_label.pack(pady=20)
     
-    def Procurarprevisao():
+    def getprevisao():
         cidade = infocidade.get()  # Recebe nome da cidade
         paiscodigo = infopaiscodigo.get()  # Recebe código do país (Exemplo: PT para Portugal)
         
@@ -135,7 +136,7 @@ def Previsão5dias():
                 result_textbox.configure(state="disabled")
 
                 # Botão para buscar o tempo
-                search_btn = ctk.CTkButton(janela, text='Procurar por outra Cidade', font=custom_font2,command=Procurarprevisao, text_color='white', corner_radius=20, width=200, height=40)
+                search_btn = ctk.CTkButton(janela, text='Procurar por outra Cidade', font=custom_font2,command=getprevisao, text_color='white', corner_radius=20, width=200, height=40)
                 search_btn.pack(pady=10)  
 
                 back_btn = ctk.CTkButton(janela, text='Voltar', font=custom_font2, command= clique,text_color='white', corner_radius=20, width=200, height=40)
@@ -144,12 +145,53 @@ def Previsão5dias():
                 result_label.configure(text='Cidade não encontrada!',text_color='white', font=custom_font2)
 
     # Botão para buscar o tempo
-    search_btn = ctk.CTkButton(janela, text='Procurar Tempo', font=custom_font2,command=Procurarprevisao, text_color='white', corner_radius=20, width=200, height=40)
+    search_btn = ctk.CTkButton(janela, text='Procurar Tempo', font=custom_font2,command=getprevisao, text_color='white', corner_radius=20, width=200, height=40)
     search_btn.pack(pady=10)  
 
     back_btn = ctk.CTkButton(janela, text='Voltar', font=custom_font2, command= clique,text_color='white', corner_radius=20, width=200, height=40)
     back_btn.pack(pady=10)
 
+def localizacaoatual():
+    limpar_janela()
+
+    result_label = ctk.CTkLabel(janela, text='')
+    result_label.pack(pady=20)
+
+    def get_location():
+        g = geocoder.ip('me')
+        if g.ok:
+            return g.latlng  # Retorna latitude e longitude
+        else:
+            return None
+
+    location = get_location()
+    if location:
+        print(f'Sua localização aproximada: Latitude {location[0]}, Longitude {location[1]}')
+    else:
+        print('Não foi possível obter sua localização.')
+
+    def get_weather(lat, lon, api_key):
+        url = f'http://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}&units=metric&lang=pt'
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            return data
+        else:
+            return None
+
+    Api_key = '344ca4445c87003f84ffbe7f96e79a30' #chave
+
+    if location:
+        weather_data = get_weather(location[0], location[1], Api_key)
+        if weather_data:
+            result_label.configure(text= f"Clima atual em {weather_data['name']}: {weather_data['weather'][0]['description'].capitalize()} \n Temperatura: {weather_data['main']['temp']}°C", text_color='white', font=custom_font2)
+        else:
+            result_label.configure('Não foi possível obter as informações do clima.')
+    else:
+        result_label.configure('Não foi possível obter sua localização.')
+
+    back_btn = ctk.CTkButton(janela, text='Voltar', font=custom_font2, command= clique,text_color='white', corner_radius=20, width=200, height=40)
+    back_btn.pack(pady=10)
 #inicio programa
 clique()
 
