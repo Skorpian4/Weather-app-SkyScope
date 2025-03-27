@@ -1,5 +1,7 @@
-# Weather-app
+Install the dependencies:
 
-Run the Program:
+pip install -r requirements.txt
 
-Open Weather app in visual studio and run main.py
+Run the application:
+Open Visual studio Code
+Open main.py and run
